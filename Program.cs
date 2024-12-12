@@ -7,28 +7,37 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
 {
-    var requirements = new Dictionary<string, OpenApiSecurityScheme>
+    var scheme = new OpenApiSecurityScheme()
     {
-        ["Bearer"] = new OpenApiSecurityScheme
+        BearerFormat = "JSON Web Token",
+        Description = "Bearer authentication using a JWT.",
+        Scheme = "bearer",
+        Flows = new OpenApiOAuthFlows
         {
-            Flows = new OpenApiOAuthFlows
+            Password = new OpenApiOAuthFlow
             {
-                Password = new OpenApiOAuthFlow
+                TokenUrl = new Uri("https://localhost"),
+                Scopes = new Dictionary<string, string>
                 {
-                    TokenUrl = new Uri("https://localhost"),
-                    Scopes = new Dictionary<string, string>
-                    {
-                        ["api"] = "API access"
-                    }
+                    ["api"] = "API access"
                 }
-            },
-            Name = IdentityConstants.BearerScheme,
-            Type = SecuritySchemeType.Http,
-            Scheme = "Bearer",
+            }
+        },
+        Type = SecuritySchemeType.Http,
+        Reference = new()
+        {
+            Id = "Bearer",
+            Type = ReferenceType.SecurityScheme
         }
     };
-    document.Components ??= new OpenApiComponents();
-    document.Components.SecuritySchemes = requirements;
+
+    document.Components ??= new();
+    document.Components.SecuritySchemes ??= new Dictionary<string, OpenApiSecurityScheme>();
+    document.Components.SecuritySchemes[scheme.Reference.Id] = scheme;
+
+    // Also register the scheme with the security requirements
+    document.SecurityRequirements ??= [];
+    document.SecurityRequirements.Add(new() { [scheme] = [] });
     return Task.CompletedTask;
 }));
 
@@ -49,7 +58,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

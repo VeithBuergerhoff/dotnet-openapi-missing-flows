@@ -61,10 +61,17 @@
     "securitySchemes": {
       "Bearer": {
         "type": "http",
-        "scheme": "Bearer"
+        "description": "Bearer authentication using a JWT.",
+        "scheme": "bearer",
+        "bearerFormat": "JSON Web Token"
       }
     }
   },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
   "tags": [
     {
       "name": "Demo"
