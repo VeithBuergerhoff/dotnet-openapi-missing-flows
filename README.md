@@ -1,5 +1,8 @@
 # Demo of Document Transformer Issue
 
+> [!IMPORTANT]  
+> Changing the type to OAuth2 fixes the issue.
+
 This project demonstrates an issue with document transformer in regards to the security schema flows.
 
 Build the project using `dotnet build` and check the generated [Demo.json](Demo.json) file.
